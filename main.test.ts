@@ -1,26 +1,26 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { getWeatherForCity } from './main.js'
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { getWeatherForCity } from "./weather.js";
 
-global.fetch = vi.fn()
+global.fetch = vi.fn();
 
-describe('getWeatherForCity', () => {
+describe("getWeatherForCity", () => {
   beforeEach(() => {
-    vi.resetAllMocks()
-  })
+    vi.resetAllMocks();
+  });
 
   afterEach(() => {
-    vi.restoreAllMocks()
-  })
+    vi.restoreAllMocks();
+  });
 
-  it('should return weather data for a valid city', async () => {
+  it("should return weather data for a valid city", async () => {
     const mockGeoData = {
       results: [
         {
           latitude: 40.7128,
-          longitude: -74.0060
-        }
-      ]
-    }
+          longitude: -74.006,
+        },
+      ],
+    };
 
     const mockWeatherData = {
       current: {
@@ -28,13 +28,13 @@ describe('getWeatherForCity', () => {
         relative_humidity_2m: 65,
         apparent_temperature: 22.1,
         precipitation: 0,
-        weather_code: 1
+        weather_code: 1,
       },
       hourly: {
         temperature_2m: [20.5, 21.0, 21.5],
-        precipitation: [0, 0, 0.1]
-      }
-    }
+        precipitation: [0, 0, 0.1],
+      },
+    };
 
     vi.mocked(fetch)
       .mockResolvedValueOnce({
@@ -42,19 +42,19 @@ describe('getWeatherForCity', () => {
       } as Response)
       .mockResolvedValueOnce({
         json: () => Promise.resolve(mockWeatherData),
-      } as Response)
+      } as Response);
 
-    const result = await getWeatherForCity('New York')
+    const result = await getWeatherForCity("New York");
 
-    expect(fetch).toHaveBeenCalledTimes(2)
+    expect(fetch).toHaveBeenCalledTimes(2);
     expect(fetch).toHaveBeenNthCalledWith(
       1,
-      'https://geocoding-api.open-meteo.com/v1/search?name=New York&count=1&language=en&format=json'
-    )
+      "https://geocoding-api.open-meteo.com/v1/search?name=New York&count=1&language=en&format=json",
+    );
     expect(fetch).toHaveBeenNthCalledWith(
       2,
-      'https://api.open-meteo.com/v1/forecast?latitude=40.7128&longitude=-74.006&current=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,weather_code&hourly=temperature_2m,precipitation&forecast_days=1'
-    )
+      "https://api.open-meteo.com/v1/forecast?latitude=40.7128&longitude=-74.006&current=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,weather_code&hourly=temperature_2m,precipitation&forecast_days=1",
+    );
 
     expect(result).toEqual({
       content: [
@@ -63,21 +63,21 @@ describe('getWeatherForCity', () => {
           text: JSON.stringify(mockWeatherData, null, 2),
         },
       ],
-    })
-  })
+    });
+  });
 
-  it('should return error message for city not found', async () => {
+  it("should return error message for city not found", async () => {
     const mockGeoData = {
-      results: []
-    }
+      results: [],
+    };
 
     vi.mocked(fetch).mockResolvedValueOnce({
       json: () => Promise.resolve(mockGeoData),
-    } as Response)
+    } as Response);
 
-    const result = await getWeatherForCity('NonexistentCity')
+    const result = await getWeatherForCity("NonexistentCity");
 
-    expect(fetch).toHaveBeenCalledTimes(1)
+    expect(fetch).toHaveBeenCalledTimes(1);
     expect(result).toEqual({
       content: [
         {
@@ -85,33 +85,33 @@ describe('getWeatherForCity', () => {
           text: 'Sorry, I couldn\'t find a city named "NonexistentCity". Please check the spelling and try again.',
         },
       ],
-    })
-  })
+    });
+  });
 
-  it('should handle fetch errors gracefully', async () => {
-    const mockError = new Error('Network error')
-    vi.mocked(fetch).mockRejectedValueOnce(mockError)
+  it("should handle fetch errors gracefully", async () => {
+    const mockError = new Error("Network error");
+    vi.mocked(fetch).mockRejectedValueOnce(mockError);
 
-    const result = await getWeatherForCity('TestCity')
+    const result = await getWeatherForCity("TestCity");
 
     expect(result).toEqual({
       content: [
         {
           type: "text",
-          text: 'Error fetching weather data: Network error',
+          text: "Error fetching weather data: Network error",
         },
       ],
-    })
-  })
+    });
+  });
 
-  it('should handle missing results property', async () => {
-    const mockGeoData = {}
+  it("should handle missing results property", async () => {
+    const mockGeoData = {};
 
     vi.mocked(fetch).mockResolvedValueOnce({
       json: () => Promise.resolve(mockGeoData),
-    } as Response)
+    } as Response);
 
-    const result = await getWeatherForCity('TestCity')
+    const result = await getWeatherForCity("TestCity");
 
     expect(result).toEqual({
       content: [
@@ -120,6 +120,6 @@ describe('getWeatherForCity', () => {
           text: 'Sorry, I couldn\'t find a city named "TestCity". Please check the spelling and try again.',
         },
       ],
-    })
-  })
-})
+    });
+  });
+});
