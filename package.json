@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
+    "start": "tsx main.ts",
     "test": "vitest",
     "test:run": "vitest run"
   },
@@ -12,10 +13,12 @@
   "description": "",
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.15.0",
+    "undici": "^7.15.0",
     "zod": "^3.25.75"
   },
   "devDependencies": {
     "@types/node": "^24.3.1",
+    "tsx": "^4.20.5",
     "typescript": "^5.9.2",
     "vitest": "^3.2.4"
   }

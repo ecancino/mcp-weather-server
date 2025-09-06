@@ -1,7 +1,10 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { getWeatherForCity } from "./weather.js";
+import { getWeatherForCity } from "./weather";
+import { request } from "undici";
 
-global.fetch = vi.fn();
+vi.mock("undici", () => ({
+  request: vi.fn(),
+}));
 
 describe("getWeatherForCity", () => {
   beforeEach(() => {
@@ -36,22 +39,26 @@ describe("getWeatherForCity", () => {
       },
     };
 
-    vi.mocked(fetch)
+    vi.mocked(request)
       .mockResolvedValueOnce({
-        json: () => Promise.resolve(mockGeoData),
-      } as Response)
+        body: {
+          json: () => Promise.resolve(mockGeoData),
+        },
+      } as any)
       .mockResolvedValueOnce({
-        json: () => Promise.resolve(mockWeatherData),
-      } as Response);
+        body: {
+          json: () => Promise.resolve(mockWeatherData),
+        },
+      } as any);
 
     const result = await getWeatherForCity("New York");
 
-    expect(fetch).toHaveBeenCalledTimes(2);
-    expect(fetch).toHaveBeenNthCalledWith(
+    expect(request).toHaveBeenCalledTimes(2);
+    expect(request).toHaveBeenNthCalledWith(
       1,
       "https://geocoding-api.open-meteo.com/v1/search?name=New York&count=1&language=en&format=json",
     );
-    expect(fetch).toHaveBeenNthCalledWith(
+    expect(request).toHaveBeenNthCalledWith(
       2,
       "https://api.open-meteo.com/v1/forecast?latitude=40.7128&longitude=-74.006&current=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,weather_code&hourly=temperature_2m,precipitation&forecast_days=1",
     );
@@ -71,13 +78,15 @@ describe("getWeatherForCity", () => {
       results: [],
     };
 
-    vi.mocked(fetch).mockResolvedValueOnce({
-      json: () => Promise.resolve(mockGeoData),
-    } as Response);
+    vi.mocked(request).mockResolvedValueOnce({
+      body: {
+        json: () => Promise.resolve(mockGeoData),
+      },
+    } as any);
 
     const result = await getWeatherForCity("NonexistentCity");
 
-    expect(fetch).toHaveBeenCalledTimes(1);
+    expect(request).toHaveBeenCalledTimes(1);
     expect(result).toEqual({
       content: [
         {
@@ -90,7 +99,7 @@ describe("getWeatherForCity", () => {
 
   it("should handle fetch errors gracefully", async () => {
     const mockError = new Error("Network error");
-    vi.mocked(fetch).mockRejectedValueOnce(mockError);
+    vi.mocked(request).mockRejectedValueOnce(mockError);
 
     const result = await getWeatherForCity("TestCity");
 
@@ -107,9 +116,11 @@ describe("getWeatherForCity", () => {
   it("should handle missing results property", async () => {
     const mockGeoData = {};
 
-    vi.mocked(fetch).mockResolvedValueOnce({
-      json: () => Promise.resolve(mockGeoData),
-    } as Response);
+    vi.mocked(request).mockResolvedValueOnce({
+      body: {
+        json: () => Promise.resolve(mockGeoData),
+      },
+    } as any);
 
     const result = await getWeatherForCity("TestCity");
 

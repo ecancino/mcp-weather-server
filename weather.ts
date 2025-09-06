@@ -1,9 +1,11 @@
+import { request } from "undici";
+
 export async function getWeatherForCity(city: string) {
   try {
-    const geoResponse = await fetch(
+    const geoResponse = await request(
       `https://geocoding-api.open-meteo.com/v1/search?name=${city}&count=1&language=en&format=json`,
     );
-    const geoData = await geoResponse.json();
+    const geoData = await geoResponse.body.json();
 
     if (!geoData.results || geoData.results.length === 0) {
       return {
@@ -17,11 +19,11 @@ export async function getWeatherForCity(city: string) {
     }
 
     const { latitude, longitude } = geoData.results[0];
-    const weatherResponse = await fetch(
+    const weatherResponse = await request(
       `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,weather_code&hourly=temperature_2m,precipitation&forecast_days=1`,
     );
 
-    const weatherData = await weatherResponse.json();
+    const weatherData = await weatherResponse.body.json();
 
     return {
       content: [
