@@ -1,0 +1,95 @@
+name: PR Checks
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened]
+
+jobs:
+  prevent-failing-merge:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Use Node.js 20.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20.x"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run TypeScript check
+        run: |
+          echo "🔍 Running TypeScript compilation check..."
+          npx tsc --noEmit
+          if [ $? -ne 0 ]; then
+            echo "❌ TypeScript compilation failed - blocking merge"
+            exit 1
+          fi
+          echo "✅ TypeScript compilation passed"
+
+      - name: Run all tests
+        run: |
+          echo "🧪 Running test suite..."
+          npm run test:run
+          if [ $? -ne 0 ]; then
+            echo "❌ Tests failed - blocking merge"
+            exit 1
+          fi
+          echo "✅ All tests passed"
+
+      - name: Validate project structure
+        run: |
+          echo "📁 Validating project structure..."
+
+          # Check for required files
+          required_files=("package.json" "tsconfig.json" "vitest.config.ts" "src/main.ts")
+          for file in "${required_files[@]}"; do
+            if [ ! -f "$file" ]; then
+              echo "❌ Required file missing: $file"
+              exit 1
+            fi
+          done
+
+          # Check for test files
+          test_files=$(find src -name "*.test.ts" | wc -l)
+          if [ "$test_files" -eq 0 ]; then
+            echo "❌ No test files found in src/"
+            exit 1
+          fi
+
+          echo "✅ Project structure validation passed"
+          echo "📊 Found $test_files test files"
+
+      - name: Check dependencies
+        run: |
+          echo "📦 Checking dependencies..."
+          npm audit --audit-level=high
+          if [ $? -ne 0 ]; then
+            echo "⚠️  High security vulnerabilities found"
+            exit 1
+          fi
+          echo "✅ Dependency security check passed"
+
+      - name: Summary
+        if: success()
+        run: |
+          echo "🎉 All PR checks passed!"
+          echo "✅ TypeScript compilation: PASSED"
+          echo "✅ Test execution: PASSED"
+          echo "✅ Project structure: PASSED"
+          echo "✅ Security audit: PASSED"
+          echo ""
+          echo "🚀 This PR is ready for review and merge!"
+
+      - name: Failure Summary
+        if: failure()
+        run: |
+          echo "❌ PR checks failed!"
+          echo "This PR cannot be merged until all checks pass."
+          echo "Please fix the issues and push new commits."
+          exit 1
