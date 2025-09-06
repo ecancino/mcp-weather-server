@@ -17,10 +17,22 @@ This is an MCP (Model Context Protocol) server that provides weather data functi
 
 ## Development Commands
 
-The project uses npm with minimal scripts defined in package.json:
-- `npm test` - Currently returns an error (no tests implemented)
+The project uses pnpm for package management. Available scripts:
+- `pnpm start` - Run the MCP weather server using tsx
+- `pnpm test` - Run tests in watch mode using vitest
+- `pnpm run test:run` - Run tests once
 
-Note: This project has no build process, linting, or testing configured. The TypeScript file runs directly.
+## Development Workflow
+
+**Always create a new branch before making changes and open a pull request:**
+1. Create feature branch: `git checkout -b feature-name`
+2. Make changes and test locally: `pnpm test`
+3. Commit changes: `git commit -m "Description"`
+4. Push branch: `git push origin feature-name`
+5. Open pull request to main branch
+6. Wait for CI checks to pass before merging
+
+**Never commit directly to main branch** - all changes must go through pull requests.
 
 ## Key Dependencies
 
@@ -29,9 +41,9 @@ Note: This project has no build process, linting, or testing configured. The Typ
 
 ## Running the Server
 
-Execute directly with a TypeScript runtime:
+Execute using pnpm:
 ```bash
-npx tsx main.ts
+pnpm start
 ```
 
 The server runs as a stdio-based MCP server and logs "Weather server is running..." to console.
