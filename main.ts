@@ -2,7 +2,7 @@ import { z } from "zod";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio";
 
-import { getWeatherForCity } from "./weather";
+import { getWeatherForCity } from "./cityWeather";
 
 const citySchema = z
   .string()
