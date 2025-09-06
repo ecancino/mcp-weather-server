@@ -30,5 +30,5 @@ export async function getGeoData(city: string): Promise<GeoData | null> {
 
   const [geoData] = data?.results ?? [null];
 
-  return geoData;
+  return geoData || null;
 }
