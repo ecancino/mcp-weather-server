@@ -9,7 +9,7 @@
     "test:run": "vitest run"
   },
   "keywords": [],
-  "author": "",
+  "author": "Eduardo Cancino-Zarate <ecancinozarate@gmail.com>",
   "license": "ISC",
   "description": "",
   "dependencies": {
